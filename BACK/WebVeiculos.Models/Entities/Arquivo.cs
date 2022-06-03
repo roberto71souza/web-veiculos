@@ -8,11 +8,10 @@ namespace WebVeiculos.Models.Entities
 {
     public class Arquivo : EntitieBase
     {
-
         public string Legenda { get; set; }
         public int IdVeiculo { get; set; }
         public Veiculo Veiculo { get; set; }
-        public Arquivo(string legenda, int idVeiculo)
+        public Arquivo(int id, string legenda, int idVeiculo) : base(id)
         {
             ValidarEntidadeVeiculo(legenda, idVeiculo);
             Legenda = legenda;

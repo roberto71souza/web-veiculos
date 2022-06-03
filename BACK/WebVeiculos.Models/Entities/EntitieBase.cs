@@ -8,7 +8,7 @@ namespace WebVeiculos.Models.Entities
 {
     public abstract class EntitieBase
     {
-        public int Id { get; set; }
+        public int Id { get; private set; }
         public ICollection<string> ListaDeErros { get; set; }
         public bool EhValido
         {
@@ -22,8 +22,9 @@ namespace WebVeiculos.Models.Entities
             }
         }
 
-        public EntitieBase()
+        public EntitieBase(int id)
         {
+            Id = id;
             ListaDeErros = new List<string>();
         }
 

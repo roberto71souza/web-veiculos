@@ -18,7 +18,8 @@ namespace WebVeiculos.Models.Entities
         public string InformacoesGerais { get; private set; }
         public ICollection<Arquivo> Arquivos { get; private set; }
 
-        public Veiculo(string nomeProprietario, string modeloVeiculo, string fabricanteVeiculo, string anoVeiculo, string corVeiculo, string estado, string cidade, string informacoesGerais)
+        public Veiculo(int id, string nomeProprietario, string modeloVeiculo, string fabricanteVeiculo, string anoVeiculo,
+                       string corVeiculo, string estado, string cidade, string informacoesGerais) : base(id)
         {
             ValidarEntidadeVeiculo(nomeProprietario, modeloVeiculo, fabricanteVeiculo, anoVeiculo, corVeiculo, estado, cidade);
             NomeProprietario = nomeProprietario;
