@@ -16,7 +16,7 @@ namespace WebVeiculos.Models.Entities
         public string Estado { get; private set; }
         public string Cidade { get; private set; }
         public string InformacoesGerais { get; private set; }
-        public ICollection<Arquivo> Arquivos { get; private set; }
+        public ICollection<Arquivo> Arquivos { get; set; }
 
         public Veiculo(int id, string nomeProprietario, string modeloVeiculo, string fabricanteVeiculo, string anoVeiculo,
                        string corVeiculo, string estado, string cidade, string informacoesGerais) : base(id)
@@ -55,6 +55,20 @@ namespace WebVeiculos.Models.Entities
 
             ValidarEntidade(cidade.Length <= 3, "Cidade, devera ter mais que 3 caracteres");
             ValidarEntidade(string.IsNullOrWhiteSpace(cidade), "Cidade, é obrigatorio");
+        }
+
+        public void UpdateEntidadeVeiculo(Veiculo veiculo)
+        {
+            ClearListaDeErros();
+            ValidarEntidadeVeiculo(veiculo.NomeProprietario, veiculo.ModeloVeiculo, veiculo.FabricanteVeiculo, veiculo.AnoVeiculo, veiculo.CorVeiculo, veiculo.Estado, veiculo.Cidade);
+            NomeProprietario = veiculo.NomeProprietario;
+            ModeloVeiculo = veiculo.ModeloVeiculo;
+            FabricanteVeiculo = veiculo.FabricanteVeiculo;
+            AnoVeiculo = veiculo.AnoVeiculo;
+            CorVeiculo = veiculo.CorVeiculo;
+            Estado = veiculo.Estado;
+            Cidade = veiculo.Cidade;
+            InformacoesGerais = veiculo.InformacoesGerais;
         }
     }
 }

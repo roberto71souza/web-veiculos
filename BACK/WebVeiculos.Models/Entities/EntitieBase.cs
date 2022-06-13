@@ -9,7 +9,8 @@ namespace WebVeiculos.Models.Entities
     public abstract class EntitieBase
     {
         public int Id { get; private set; }
-        public ICollection<string> ListaDeErros { get; set; }
+        private ICollection<string> _listaDeErros { get; set; }
+        public IReadOnlyCollection<string> ListaDeErros { get { return _listaDeErros.ToList(); } }
         public bool EhValido
         {
             get
@@ -25,15 +26,20 @@ namespace WebVeiculos.Models.Entities
         public EntitieBase(int id)
         {
             Id = id;
-            ListaDeErros = new List<string>();
+            _listaDeErros = new List<string>();
         }
 
         protected void ValidarEntidade(bool hasError, string mensagemErro)
         {
             if (hasError)
             {
-                ListaDeErros.Add(mensagemErro);
+                _listaDeErros.Add(mensagemErro);
             }
+        }
+
+        protected void ClearListaDeErros()
+        {
+            _listaDeErros.Clear();
         }
     }
 }
