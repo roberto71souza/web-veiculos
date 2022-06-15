@@ -11,7 +11,7 @@ namespace WebVeiculos.Models.Repositories.Implementacao
 {
     public class VeiculoRepository : IVeiculoRepository
     {
-        public ConexaoDbDapper _conexaoDb { get; set; }
+        private ConexaoDbDapper _conexaoDb { get; set; }
         public VeiculoRepository(ConexaoDbDapper conexaoDb)
         {
             _conexaoDb = conexaoDb;
