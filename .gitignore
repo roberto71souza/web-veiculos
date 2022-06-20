@@ -10,6 +10,12 @@
 *.userosscache
 *.sln.docstates
 
+
+# imagens
+*.jpg
+*.jpeg
+*.png
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -64,6 +70,7 @@ bld/
 *.mdf
 *.ldf
 *.ndf
+*.sql
 
 # JetBrains Rider
 .idea/
