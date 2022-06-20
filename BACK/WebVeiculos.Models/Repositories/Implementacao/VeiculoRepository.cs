@@ -55,7 +55,7 @@ namespace WebVeiculos.Models.Repositories.Implementacao
 	                                 v.modelo_veiculo as ModeloVeiculo, v.fabricante_veiculo as FabricanteVeiculo,
 	                                 v.ano_veiculo as AnoVeiculo, v.cor_veiculo as CorVeiculo,
 	                                 v.estado as Estado, v.cidade as Cidade, v.informacoes_gerais as InformacoesGerais,
-	                                 au.id as Id,au.legenda as Legenda,au.id_veiculo as IdVeiculo
+	                                 au.id as Id,au.legenda as Legenda, au.nome_arquivo as NomeArquivo,au.id_veiculo as IdVeiculo
                                      FROM tbl_veiculo v
                                      INNER JOIN tbl_arquivo_upload au
                                      ON v.id = au.id_veiculo;";
@@ -81,7 +81,7 @@ namespace WebVeiculos.Models.Repositories.Implementacao
 
                                             if (arq is not null)
                                             {
-                                                veiculo.Arquivos.Add(new Arquivo(arq.Id, arq.Legenda, arq.IdVeiculo));
+                                                veiculo.Arquivos.Add(new Arquivo(arq.Id, arq.Legenda, arq.NomeArquivo, arq.IdVeiculo));
                                             }
                                             return veiculo;
                                         });
@@ -100,10 +100,10 @@ namespace WebVeiculos.Models.Repositories.Implementacao
 	                                 v.modelo_veiculo as ModeloVeiculo, v.fabricante_veiculo as FabricanteVeiculo,
 	                                 v.ano_veiculo as AnoVeiculo, v.cor_veiculo as CorVeiculo,
 	                                 v.estado as Estado, v.cidade as Cidade, v.informacoes_gerais as InformacoesGerais,
-	                                 au.id as Id, au.legenda as Legenda, au.id_veiculo as IdVeiculo
+	                                 au.id as Id, au.legenda as Legenda, au.nome_arquivo as NomeArquivo, au.id_veiculo as IdVeiculo
                                      FROM tbl_veiculo v
                                      INNER JOIN tbl_arquivo_upload au
-                                     ON v.id = au.id_veiculo  WHERE v.id = @Id LIMIT 1;";
+                                     ON v.id = au.id_veiculo  WHERE v.id = @Id;";
 
                 await conexao.QueryAsync<Veiculo, Arquivo, Veiculo>(sql: query, param: new { id = id },
                    map: (veic, arq) =>
@@ -121,7 +121,7 @@ namespace WebVeiculos.Models.Repositories.Implementacao
 
                        if (arq is not null)
                        {
-                           veiculo.Arquivos.Add(new Arquivo(arq.Id, arq.Legenda, arq.IdVeiculo));
+                           veiculo.Arquivos.Add(new Arquivo(arq.Id, arq.Legenda, arq.NomeArquivo, arq.IdVeiculo));
                        }
 
                        return veiculo;
@@ -142,7 +142,7 @@ namespace WebVeiculos.Models.Repositories.Implementacao
 	                                 v.modelo_veiculo as ModeloVeiculo, v.fabricante_veiculo as FabricanteVeiculo,
 	                                 v.ano_veiculo as AnoVeiculo, v.cor_veiculo as CorVeiculo,
 	                                 v.estado as Estado, v.cidade as Cidade, v.informacoes_gerais as InformacoesGerais,
-	                                 au.id as Id, au.legenda as Legenda, au.id_veiculo as IdVeiculo
+	                                 au.id as Id, au.legenda as Legenda, au.nome_arquivo as NomeArquivo, au.id_veiculo as IdVeiculo
                                      FROM tbl_veiculo v
                                      INNER JOIN tbl_arquivo_upload au
                                      ON v.id = au.id_veiculo
@@ -167,7 +167,7 @@ namespace WebVeiculos.Models.Repositories.Implementacao
 
                         if (arqu is not null)
                         {
-                            veiculo.Arquivos.Add(new Arquivo(arqu.Id, arqu.Legenda, arqu.IdVeiculo));
+                            veiculo.Arquivos.Add(new Arquivo(arqu.Id, arqu.Legenda, arqu.NomeArquivo, arqu.IdVeiculo));
                         }
 
                         return veiculo;
@@ -181,11 +181,11 @@ namespace WebVeiculos.Models.Repositories.Implementacao
         {
             using (var conexao = _conexaoDb.ConnectionDapper)
             {
-                var query = @"INSERT INTO tbl_arquivo_upload (legenda,id_veiculo) VALUES (@Legenda,@IdVeiculo);";
+                var query = @"INSERT INTO tbl_arquivo_upload (legenda,nome_arquivo,id_veiculo) VALUES (@Legenda,@NomeArquivo,@IdVeiculo);";
 
                 foreach (var arquivo in arquivos)
                 {
-                    arquivo.UpdateEntidadeArquivo(new Arquivo(arquivo.Id, arquivo.Legenda, idVeiculo));
+                    arquivo.UpdateEntidadeArquivo(new Arquivo(arquivo.Id, arquivo.Legenda, arquivo.NomeArquivo, idVeiculo));
 
                     if (arquivo.EhValido)
                     {
