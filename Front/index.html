@@ -4,11 +4,60 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/style.css" />
     <title>Web Veiculos</title>
   </head>
   <body>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <header>
+      <div class="header-display-lancamentos">
+        <div class="item-lancamentos">
+          <img
+            title="ultimos lançados"
+            src="img-teste.jpg"
+            alt="minha imagem"
+          />
+        </div>
+
+        <div class="item-lancamentos">
+          <img
+            title="ultimos lançados"
+            src="img-teste.jpg"
+            alt="minha imagem"
+          />
+        </div>
+        <div class="item-lancamentos">
+          <img src="img-teste.jpg" alt="minha imagem" />
+        </div>
+        <div class="item-lancamentos">
+          <img src="img-teste.jpg" alt="minha imagem" />
+        </div>
+        <div class="item-lancamentos">
+          <img src="img-teste.jpg" alt="minha imagem" />
+        </div>
+        <div class="item-lancamentos">
+          <img src="img-teste.jpg" alt="minha imagem" />
+        </div>
+      </div>
+
+      <div class="header-container">
+        <div id="img-curva"></div>
+        <div class="container-busca">
+          <input id="input-pesquisa" type="text" />
+          <button id="button-buscar">
+            <img title="Pesquisar" src="pesquisa.png" alt="" />
+          </button>
+        </div>
+
+        <button id="btn-open-modal-adicionar">
+          <img src="adicionar.png" title="Adicionar meu veiculo" />
+        </button>
+      </div>
+    </header>
+
+    <div class="modal" id="modal-remove"></div>
+
+    <script src="scripts/jquery-3.6.0.min.js"></script>
     <script src="scripts/app.js"></script>
+    <script src="scripts/modal.js"></script>
   </body>
 </html>

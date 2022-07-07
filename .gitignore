@@ -10,11 +10,8 @@
 *.userosscache
 *.sln.docstates
 
-
-# imagens
-*.jpg
-*.jpeg
-*.png
+## imagens dos veiculos
+Back/WebVeiculos.WebApi/Recursos/Imagens/
 
 # Build results
 [Dd]ebug/
