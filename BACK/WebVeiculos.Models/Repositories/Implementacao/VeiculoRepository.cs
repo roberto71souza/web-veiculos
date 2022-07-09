@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using WebVeiculos.Models.Entities;
+using WebVeiculos.Models.Entities.Paginacao;
 using WebVeiculos.Models.Repositories.Contratos;
 
 namespace WebVeiculos.Models.Repositories.Implementacao
@@ -45,38 +45,43 @@ namespace WebVeiculos.Models.Repositories.Implementacao
             }
         }
 
-        public async Task<ICollection<Veiculo>> GetAllVeiculos()
+        public async Task<PaginacaoList> GetAllVeiculos(PaginacaoList paginacao)
         {
-            var veiculos = new List<Veiculo>();
+            paginacao.Veiculos = new List<Veiculo>();
 
             using (var conexao = _conexaoDb.ConnectionDapper)
             {
-                var query = @"SELECT v.id as Id, v.nome_proprietario as NomeProprietario,
-	                                 v.modelo_veiculo as ModeloVeiculo, v.fabricante_veiculo as FabricanteVeiculo,
-	                                 v.ano_veiculo as AnoVeiculo, v.cor_veiculo as CorVeiculo,
-	                                 v.estado as Estado, v.cidade as Cidade, v.informacoes_gerais as InformacoesGerais,
-	                                 au.id as Id,au.legenda as Legenda, au.nome_arquivo as NomeArquivo,au.id_veiculo as IdVeiculo
-                                     FROM tbl_veiculo v
-                                     INNER JOIN tbl_arquivo_upload au
-                                     ON v.id = au.id_veiculo;";
+                paginacao.TotalItems = await conexao.QueryFirstAsync<int>("SELECT COUNT(id) FROM tbl_veiculo");
 
-                await conexao.QueryAsync<Veiculo, Arquivo, Veiculo>(sql: query,
+                paginacao.TotalPaginas = (int)Math.Ceiling((decimal)paginacao.TotalItems / paginacao.ItemsPorPagina);
+
+                paginacao.BuscarItemsApartir = (paginacao.PaginaAtual - 1) * paginacao.ItemsPorPagina;
+
+                var query = @"SELECT v.id as Id, v.nome_proprietario as NomeProprietario,
+                                      v.modelo_veiculo as ModeloVeiculo, v.fabricante_veiculo as FabricanteVeiculo,
+                                      v.ano_veiculo as AnoVeiculo, v.cor_veiculo as CorVeiculo,
+                                      v.estado as Estado, v.cidade as Cidade, v.informacoes_gerais as InformacoesGerais,
+                                      au.id as Id,au.legenda as Legenda, au.nome_arquivo as NomeArquivo,au.id_veiculo as IdVeiculo
+                                          FROM (SELECT * FROM tbl_veiculo LIMIT @limit,@offset) v
+                                          INNER JOIN tbl_arquivo_upload au
+                                          ON v.id = au.id_veiculo;";
+
+                await conexao.QueryAsync<Veiculo, Arquivo, Veiculo>(sql: query, param: new { limit = paginacao.BuscarItemsApartir, offset = paginacao.ItemsPorPagina },
                                         map: (veic, arq) =>
                                         {
-                                            Veiculo veiculo = veiculos.FirstOrDefault(x => x.Id == veic.Id);
+                                            Veiculo veiculo = paginacao.Veiculos.FirstOrDefault(x => x.Id == veic.Id);
 
                                             if (veiculo is null)
                                             {
                                                 veiculo = new Veiculo(veic.Id, veic.NomeProprietario, veic.ModeloVeiculo, veic.FabricanteVeiculo,
                                                              veic.AnoVeiculo, veic.CorVeiculo, veic.Estado, veic.Cidade, veic.InformacoesGerais);
 
-                                                veiculos.Add(veiculo);
+                                                paginacao.Veiculos.Add(veiculo);
                                             }
 
                                             if (veiculo.Arquivos is null)
                                             {
                                                 veiculo.Arquivos = new List<Arquivo>();
-
                                             }
 
                                             if (arq is not null)
@@ -86,7 +91,7 @@ namespace WebVeiculos.Models.Repositories.Implementacao
                                             return veiculo;
                                         });
             }
-            return veiculos;
+            return paginacao;
         }
 
 
@@ -131,33 +136,37 @@ namespace WebVeiculos.Models.Repositories.Implementacao
             return veiculo;
         }
 
-        public async Task<ICollection<Veiculo>> GetVeiculoByModelo(string modelo)
+        public async Task<PaginacaoList> GetVeiculoByModelo(PaginacaoList paginacao, string modelo)
         {
-            var veiculos = new List<Veiculo>();
+            paginacao.Veiculos = new List<Veiculo>();
 
             using (var conexao = _conexaoDb.ConnectionDapper)
             {
+                paginacao.TotalItems = await conexao.QueryFirstAsync<int>("SELECT COUNT(id) FROM tbl_veiculo");
+
+                paginacao.TotalPaginas = (int)Math.Ceiling((decimal)paginacao.TotalItems / paginacao.ItemsPorPagina);
+
+                paginacao.BuscarItemsApartir = (paginacao.PaginaAtual - 1) * paginacao.ItemsPorPagina;
 
                 var query = @"SELECT v.id as Id, v.nome_proprietario as NomeProprietario,
-	                                 v.modelo_veiculo as ModeloVeiculo, v.fabricante_veiculo as FabricanteVeiculo,
-	                                 v.ano_veiculo as AnoVeiculo, v.cor_veiculo as CorVeiculo,
-	                                 v.estado as Estado, v.cidade as Cidade, v.informacoes_gerais as InformacoesGerais,
-	                                 au.id as Id, au.legenda as Legenda, au.nome_arquivo as NomeArquivo, au.id_veiculo as IdVeiculo
-                                     FROM tbl_veiculo v
+                                     v.modelo_veiculo as ModeloVeiculo, v.fabricante_veiculo as FabricanteVeiculo,
+                                     v.ano_veiculo as AnoVeiculo, v.cor_veiculo as CorVeiculo,
+                                     v.estado as Estado, v.cidade as Cidade, v.informacoes_gerais as InformacoesGerais,
+                                     au.id as Id,au.legenda as Legenda, au.nome_arquivo as NomeArquivo,au.id_veiculo as IdVeiculo
+                                     FROM (SELECT * FROM tbl_veiculo WHERE modelo_veiculo LIKE CONCAT('%',@modelo,'%') LIMIT @limit,@offset) v
                                      INNER JOIN tbl_arquivo_upload au
-                                     ON v.id = au.id_veiculo
-                                     WHERE v.modelo_veiculo LIKE CONCAT('%',@modelo,'%');";
+                                     ON v.id = au.id_veiculo;";
 
-                await conexao.QueryAsync<Veiculo, Arquivo, Veiculo>(sql: query, param: new { modelo = modelo },
+                await conexao.QueryAsync<Veiculo, Arquivo, Veiculo>(sql: query, param: new { modelo = modelo, limit = paginacao.BuscarItemsApartir, offset = paginacao.ItemsPorPagina },
                     map: (veic, arqu) =>
                     {
-                        var veiculo = veiculos.FirstOrDefault(x => x.Id == veic.Id);
+                        var veiculo = paginacao.Veiculos.FirstOrDefault(x => x.Id == veic.Id);
 
                         if (veiculo is null)
                         {
                             veiculo = new Veiculo(veic.Id, veic.NomeProprietario, veic.ModeloVeiculo, veic.FabricanteVeiculo,
                                                   veic.AnoVeiculo, veic.CorVeiculo, veic.Estado, veic.Cidade, veic.InformacoesGerais);
-                            veiculos.Add(veiculo);
+                            paginacao.Veiculos.Add(veiculo);
                         }
 
                         if (veiculo.Arquivos is null)
@@ -174,7 +183,7 @@ namespace WebVeiculos.Models.Repositories.Implementacao
                     });
 
             }
-            return veiculos;
+            return paginacao;
         }
 
         private void SalvarArquivosCarro(int idVeiculo, ICollection<Arquivo> arquivos)
