@@ -71,6 +71,22 @@ namespace WebVeiculos.Core.Services.Implementacao
             }
         }
 
+        public async Task<ICollection<VeiculoDto>> GetUltimosVeiculosCadastradosService(int quantidade)
+        {
+            try
+            {
+                var veiculosResult = await _veiculoRepository.GetUltimosVeiculosCadastrados(quantidade);
+
+                var veiculosMap = _mapper.Map<ICollection<VeiculoDto>>(veiculosResult);
+
+                return veiculosMap;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task<PaginacaoListDto> GetVeiculoByModeloService(PaginacaoListDto paginacao, string modelo)
         {
             try

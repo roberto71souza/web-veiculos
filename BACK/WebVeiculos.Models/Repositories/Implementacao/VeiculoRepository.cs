@@ -136,6 +136,49 @@ namespace WebVeiculos.Models.Repositories.Implementacao
             return veiculo;
         }
 
+        public async Task<ICollection<Veiculo>> GetUltimosVeiculosCadastrados(int quantidade)
+        {
+            var veiculos = new List<Veiculo>();
+
+            using (var conexao = _conexaoDb.ConnectionDapper)
+            {
+                var query = @"SELECT v.id as Id, v.nome_proprietario as NomeProprietario,
+                                     v.modelo_veiculo as ModeloVeiculo, v.fabricante_veiculo as FabricanteVeiculo,
+	                                 v.ano_veiculo as AnoVeiculo, v.cor_veiculo as CorVeiculo,
+	                                 v.estado as Estado, v.cidade as Cidade, v.informacoes_gerais as InformacoesGerais,
+	                                 au.id as Id,au.legenda as Legenda, au.nome_arquivo as NomeArquivo,au.id_veiculo as IdVeiculo
+                                     FROM(SELECT * FROM tbl_veiculo ORDER BY id DESC LIMIT @quantidade) v
+                                     INNER JOIN tbl_arquivo_upload au
+                                     ON v.id = au.id_veiculo; ";
+
+                await conexao.QueryAsync<Veiculo, Arquivo, Veiculo>(sql: query, param: new { quantidade = quantidade },
+                        map: (veic, arq) =>
+                         {
+                             var veiculo = veiculos.FirstOrDefault(x => x.Id == veic.Id);
+
+                             if (veiculo is null)
+                             {
+                                 veiculo = new Veiculo(veic.Id, veic.NomeProprietario, veic.ModeloVeiculo, veic.FabricanteVeiculo, veic.AnoVeiculo,
+                                                       veic.CorVeiculo, veic.Estado, veic.Cidade, veic.InformacoesGerais);
+                                 veiculos.Add(veiculo);
+                             }
+
+                             if (veiculo.Arquivos is null)
+                             {
+                                 veiculo.Arquivos = new List<Arquivo>();
+                             }
+
+                             if (arq is not null)
+                             {
+                                 veiculo.Arquivos.Add(new Arquivo(arq.Id, arq.Legenda, arq.NomeArquivo, arq.IdVeiculo));
+                             }
+
+                             return veic;
+                         });
+            }
+            return veiculos;
+        }
+
         public async Task<PaginacaoList> GetVeiculoByModelo(PaginacaoList paginacao, string modelo)
         {
             paginacao.Veiculos = new List<Veiculo>();
