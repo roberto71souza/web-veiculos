@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using WebVeiculos.Core.DTO_s;
 using WebVeiculos.Core.Services.Contratos;
 using WebVeiculos.Models.Entities;
+using WebVeiculos.Models.Entities.Paginacao;
 using WebVeiculos.Models.Repositories.Contratos;
 
 namespace WebVeiculos.Core.Services.Implementacao
@@ -38,15 +37,17 @@ namespace WebVeiculos.Core.Services.Implementacao
             }
         }
 
-        public async Task<ICollection<VeiculoDto>> GetAllVeiculosService()
+        public async Task<PaginacaoListDto> GetAllVeiculosService(PaginacaoListDto paginacao)
         {
             try
             {
-                var veiculos = await _veiculoRepository.GetAllVeiculos();
+                var paginacaoMap = _mapper.Map<PaginacaoList>(paginacao);
 
-                var veiculosMapper = _mapper.Map<ICollection<VeiculoDto>>(veiculos);
+                var veiculosPaginResult = await _veiculoRepository.GetAllVeiculos(paginacaoMap);
 
-                return veiculosMapper;
+                var VeiculosPaginDto = _mapper.Map<PaginacaoListDto>(veiculosPaginResult);
+
+                return VeiculosPaginDto;
             }
             catch (Exception ex)
             {
@@ -70,15 +71,17 @@ namespace WebVeiculos.Core.Services.Implementacao
             }
         }
 
-        public async Task<ICollection<VeiculoDto>> GetVeiculoByModeloService(string modelo)
+        public async Task<PaginacaoListDto> GetVeiculoByModeloService(PaginacaoListDto paginacao, string modelo)
         {
             try
             {
-                var veiculos = await _veiculoRepository.GetVeiculoByModelo(modelo);
+                var paginacaoMap = _mapper.Map<PaginacaoList>(paginacao);
 
-                var veiculosMapper = _mapper.Map<ICollection<VeiculoDto>>(veiculos);
+                var veiculosPaginResult = await _veiculoRepository.GetVeiculoByModelo(paginacaoMap, modelo);
 
-                return veiculosMapper;
+                var VeiculosPaginDto = _mapper.Map<PaginacaoListDto>(veiculosPaginResult);
+
+                return VeiculosPaginDto;
             }
             catch (Exception ex)
             {

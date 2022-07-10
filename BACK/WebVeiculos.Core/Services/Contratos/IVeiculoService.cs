@@ -10,8 +10,8 @@ namespace WebVeiculos.Core.Services.Contratos
     public interface IVeiculoService
     {
         Task<bool> CreateVeiculoService(VeiculoDto veiculo);
-        Task<ICollection<VeiculoDto>> GetAllVeiculosService();
+        Task<PaginacaoListDto> GetAllVeiculosService(PaginacaoListDto paginacao);
         Task<VeiculoDto> GetVeiculoByIdService(int id);
-        Task<ICollection<VeiculoDto>> GetVeiculoByModeloService(string modelo);
+        Task<PaginacaoListDto> GetVeiculoByModeloService(PaginacaoListDto paginacao, string modelo);
     }
 }
