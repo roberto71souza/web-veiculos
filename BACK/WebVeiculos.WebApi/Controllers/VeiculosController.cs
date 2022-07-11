@@ -24,15 +24,27 @@ namespace WebVeiculos.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetAll()
+        public async Task<ActionResult> GetAll([FromHeader] int paginaAtual)
         {
             try
             {
-                var veiculos = await _veiculoService.GetAllVeiculosService();
+                var paginacao = new PaginacaoListDto();
+                paginacao.PaginaAtual = paginaAtual;
 
-                if (veiculos.Any())
+                var paginacaoResult = await _veiculoService.GetAllVeiculosService(paginacao);
+
+                if (paginacaoResult.Veiculos.Any())
                 {
-                    return Ok(veiculos);
+                    return Ok(new
+                    {
+                        data = paginacaoResult.Veiculos,
+                        paginacao = new
+                        {
+                            paginaAtual = paginacaoResult.PaginaAtual,
+                            totalPaginas = paginacaoResult.TotalPaginas
+                        }
+                    }
+                    );
                 }
 
                 return NoContent();
@@ -65,14 +77,36 @@ namespace WebVeiculos.WebApi.Controllers
             }
         }
 
+        [HttpGet("getUltimosVeiculos/{quantidade}")]
+        public async Task<ActionResult> GetUltimosVeiculos(int quantidade)
+        {
+            try
+            {
+                var veiculos = await _veiculoService.GetUltimosVeiculosCadastradosService(quantidade);
+
+                if (veiculos.Any())
+                {
+                    return Ok(veiculos);
+                }
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return this.StatusCode(StatusCodes.Status500InternalServerError
+                 , $"Erro na aplicação ao tentar buscar veiculo. ERRO: {ex.Message}");
+            }
+
+        }
+
         [HttpGet("getByModelo/{modelo}")]
         public async Task<ActionResult> GetByModelo(string modelo)
         {
             try
             {
-                var veiculos = await _veiculoService.GetVeiculoByModeloService(modelo);
+                var veiculos = await _veiculoService.GetVeiculoByModeloService(null, modelo);
 
-                if (veiculos.Any())
+                if (veiculos.Veiculos.Any())
                 {
                     return Ok(veiculos);
                 }
