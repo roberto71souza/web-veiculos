@@ -99,16 +99,27 @@ namespace WebVeiculos.WebApi.Controllers
 
         }
 
-        [HttpGet("getByModelo/{modelo}")]
-        public async Task<ActionResult> GetByModelo(string modelo)
+        [HttpGet("getByModelo/{modelo}/{paginaAtual}")]
+        public async Task<ActionResult> GetByModelo(string modelo, int paginaAtual)
         {
             try
             {
-                var veiculos = await _veiculoService.GetVeiculoByModeloService(null, modelo);
+                var paginacao = new PaginacaoListDto();
+                paginacao.PaginaAtual = paginaAtual;
 
-                if (veiculos.Veiculos.Any())
+                var paginacaoResult = await _veiculoService.GetVeiculoByModeloService(paginacao, modelo);
+
+                if (paginacaoResult.Veiculos.Any())
                 {
-                    return Ok(veiculos);
+                    return Ok(new
+                    {
+                        data = paginacaoResult.Veiculos,
+                        paginacao = new
+                        {
+                            paginaAtual = paginacaoResult.PaginaAtual,
+                            totalPaginas = paginacaoResult.TotalPaginas
+                        }
+                    });
                 }
 
                 return NoContent();

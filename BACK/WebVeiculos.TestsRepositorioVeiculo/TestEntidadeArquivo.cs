@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WebVeiculos.Models.Entities;
+﻿using WebVeiculos.Models.Entities;
 using Xunit;
 
 namespace WebVeiculos.TestsWebProjetoVeiculo
@@ -13,17 +8,17 @@ namespace WebVeiculos.TestsWebProjetoVeiculo
         [Fact]
         public void SucessoAoCriarObjetoValido()
         {
-            var arquivo = new Arquivo(0, "Legenda atual", 1);
+            var arquivo = new Arquivo(0, "Legenda atual", "arquivo-1", 1);
 
-            Assert.True(arquivo.EhValido && (arquivo.ListaDeErros.Count == 0));
+            Assert.True(arquivo.EhValido);
         }
 
         [Fact]
-        public void ErroAoCriarObjetoValido()
+        public void ErroAoCriarObjeto()
         {
-            var arquivo = new Arquivo(0, "Legenda atual", 0);
+            var arquivo = new Arquivo(0, "Legenda atual", "", 1);
 
-            Assert.False(arquivo.EhValido && (arquivo.ListaDeErros.Count > 0));
+            Assert.False(arquivo.EhValido);
         }
     }
 }

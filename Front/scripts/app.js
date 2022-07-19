@@ -1,38 +1,81 @@
 const baseUrl = "https://localhost:44307/Veiculos/";
 const baseUrlImg = "https://localhost:44307/Recursos/Imagens/";
 
-function Veiculo(
-  id,
-  nomeProprietario,
-  modeloVeiculo,
-  fabricanteVeiculo,
-  anoVeiculo,
-  corVeiculo,
-  estado,
-  cidade,
-  informacoesGerais,
-  arquivos
-) {
-  (this.id = id),
-    (this.nomeProprietario = nomeProprietario),
-    (this.modeloVeiculo = modeloVeiculo),
-    (this.fabricanteVeiculo = fabricanteVeiculo),
-    (this.anoVeiculo = anoVeiculo),
-    (this.corVeiculo = corVeiculo),
-    (this.estado = estado),
-    (this.cidade = cidade),
-    (this.informacoesGerais = informacoesGerais),
-    (this.arquivos = arquivos);
-}
-
 $(document).ready(async (event) => {
-  var response = await getAllVeiculos(baseUrl),
+  var htmlVeiculos = "",
+    paginacao = "",
+    paginaAtual = sessionStorage.getItem("paginaAtual"),
+    containerVeiculo = $(".container-veiculos"),
+    containerPaginacao = $(".container-paginacao");
+
+  paginaAtual = paginaAtual !== null ? paginaAtual : 1;
+
+  var response = await getVeiculos(baseUrl, paginaAtual);
+  htmlVeiculos = htmlContainerVeiculos(response.data);
+
+  paginacao = htmlPaginacao(
+    response.paginacao.paginaAtual,
+    response.paginacao.totalPaginas
+  );
+
+  sessionStorage.removeItem("valorBusca");
+  sessionStorage.removeItem("paginaAtual");
+
+  sessionStorage.setItem("paginaAtual", response.paginacao.paginaAtual);
+
+  windowResize();
+
+  containerVeiculo.append(htmlVeiculos);
+  containerPaginacao.append(paginacao);
+});
+
+$(window).resize(
+  debounce(() => {
+    windowResize();
+    console.log("resize");
+  }, 150)
+);
+
+$("body").on("click", ".container-paginacao > label ", async function (event) {
+  var $this = $(this),
+    header = {},
+    labelValue = $this.text(),
+    valueBuca = sessionStorage.getItem("valorBusca"),
+    url = "",
     htmlVeiculos = "",
-    body = $("body");
+    containerVeiculo = $(".container-veiculos");
 
-  htmlVeiculos = htmlGetAllVeiculos(response);
+  if (valueBuca !== null) {
+    url = `${baseUrl}getByModelo/${valueBuca}/${labelValue}`;
+  } else {
+    url = baseUrl;
+    header = { paginaAtual: labelValue };
+  }
 
-  body.append(htmlVeiculos);
+  $.ajax({ url: url, method: "GET", headers: header })
+    .done(function (response) {
+      containerVeiculo.html("");
+
+      htmlVeiculos = htmlContainerVeiculos(response.data);
+
+      sessionStorage.removeItem("paginaAtual");
+      sessionStorage.setItem("paginaAtual", response.paginacao.paginaAtual);
+
+      containerVeiculo.append(htmlVeiculos);
+    })
+    .fail(function (error) {
+      console.log(error);
+    })
+    .always(function () {
+      $(".container-paginacao > label ").removeClass("active");
+      $this.addClass("active");
+      $("html, body").animate(
+        {
+          scrollTop: 0,
+        },
+        700
+      );
+    });
 });
 
 $("#input-pesquisa").keypress(function (e) {
@@ -43,35 +86,73 @@ $("#input-pesquisa").keypress(function (e) {
 
 $("#button-buscar").on("click", function (event) {
   var valorBusca = $("#input-pesquisa").val(),
-    url = `${baseUrl}getByModelo/${valorBusca}`;
+    containerPaginacao = $(".container-paginacao"),
+    paginacao = "";
+
+  var url = `${baseUrl}getByModelo/${valorBusca}/1`;
 
   if (valorBusca !== "") {
     $.ajax({ url: url, method: "GET" })
       .done(async function (response, textStatus, xhr) {
-        var contentVeiculo = $(".container-info-veiculo"),
-          body = $("body"),
+        var containerVeiculo = $(".container-veiculos"),
           htmlVeiculos = "";
 
         if (xhr.status === 204) {
-          var veiculos = await getAllVeiculos(baseUrl);
+          response = await getVeiculos(baseUrl);
 
-          htmlVeiculos = htmlGetAllVeiculos(veiculos);
+          htmlVeiculos = htmlContainerVeiculos(response.data);
 
           alert("Busca não encontrada");
         } else {
-          htmlVeiculos = htmlGetAllVeiculos(response);
+          htmlVeiculos = htmlContainerVeiculos(response.data);
+
+          sessionStorage.setItem("valorBusca", valorBusca);
+          $("#button-cancelar").css("display", "block");
+          $("#button-buscar").css("display", "none");
         }
 
-        for (const content of contentVeiculo) {
-          content.remove();
-        }
+        paginacao = htmlPaginacao(
+          response.paginacao.paginaAtual,
+          response.paginacao.totalPaginas
+        );
 
-        body.append(htmlVeiculos);
+        containerVeiculo.html("");
+        containerPaginacao.html("");
+
+        containerVeiculo.append(htmlVeiculos);
+        containerPaginacao.append(paginacao);
       })
       .fail(function (error) {
         console.log(error);
       });
   }
+});
+
+$("#button-cancelar").on("click", async function (event) {
+  var response = await getVeiculos(baseUrl),
+    htmlPaginaçao = "",
+    htmlVeiculos = "",
+    containerVeiculos = $(".container-veiculos"),
+    containerPaginacao = $(".container-paginacao");
+
+  containerVeiculos.html("");
+  containerPaginacao.html("");
+
+  htmlVeiculos = htmlContainerVeiculos(response.data);
+  htmlPaginaçao = htmlPaginacao(
+    response.paginacao.paginaAtual,
+    response.paginacao.totalPaginas
+  );
+
+  containerVeiculos.append(htmlVeiculos);
+  containerPaginacao.append(htmlPaginaçao);
+
+  sessionStorage.removeItem("paginaAtual");
+  sessionStorage.removeItem("valorBusca");
+
+  $(this).css({ display: "none" });
+  $("#button-buscar").css({ display: "block" });
+  $("#input-pesquisa").val("");
 });
 
 $("#btn-open-modal-adicionar").on("click", function (event) {
@@ -81,15 +162,25 @@ $("#btn-open-modal-adicionar").on("click", function (event) {
                   <label for="input-file">Escolher imagens</label>
                 </button>
                 <input id="input-file" type="file" multiple />
-                <div class="msg-retorno"></div>
+                <div class="msg-erro"></div>
               </div>`,
     button = `<button id="modal-btn-salvar">OK</button>`;
 
   modal.html("");
 
-  let veiculoObj = new Veiculo(0, "", "", "", "", "", "", "", "", null);
+  let veiculoNullObj = {
+    nomeProprietario: "",
+    modeloVeiculo: "",
+    fabricanteVeiculo: "",
+    anoVeiculo: "",
+    corVeiculo: "",
+    estado: "",
+    cidade: "",
+    informacoesGerais: "",
+    arquivos: null,
+  };
 
-  var modalContent = htmlModalVeiculo(content, veiculoObj, button);
+  var modalContent = htmlModalVeiculo(content, veiculoNullObj, button);
 
   modal.prepend(modalContent);
   modal.removeClass("remove");
@@ -101,7 +192,7 @@ $(".modal").on("change", "input#input-file", function (event) {
     fileNameList = [],
     txtValue = "",
     elementoP = "",
-    htmlMsgErro = $(".content-upload-imagens > .msg-retorno ");
+    htmlMsgErro = $(".content-upload-imagens > .msg-erro ");
 
   htmlMsgErro.html("");
 
@@ -122,6 +213,7 @@ $(".modal").on("change", "input#input-file", function (event) {
 
 $(".modal").on("click", "#modal-btn-salvar", function (event) {
   event.preventDefault();
+
   var inputFile = $("#input-file"),
     inputs = $(".content-adicionar input,textarea"),
     formData = new FormData();
@@ -167,49 +259,83 @@ $(".modal").on("click", "#modal-btn-salvar", function (event) {
   }
 });
 
-$(document).on("click", ".btn-detalhes-veiculo", function (event) {
-  var modal = $(".modal"),
-    idVeiculo = $(this).attr("data-veiculo-id"),
-    url = `${baseUrl}getById/${idVeiculo}`,
-    contentSlider = "",
-    modalContent = "";
+$(document).on(
+  "click",
+  ".btn-detalhes-veiculo, .item-lancamentos>img",
+  function (event) {
+    var modal = $(".modal"),
+      idVeiculo = $(this).attr("data-veiculo-id"),
+      url = `${baseUrl}getById/${idVeiculo}`,
+      contentSlider = "",
+      modalContent = "";
 
-  modal.html("");
+    modal.html("");
 
-  $.ajax({ url: url, method: "GET" })
-    .done(function (response) {
-      let veiculoObj = new Veiculo(
-        response.id,
-        response.nomeProprietario,
-        response.modeloVeiculo,
-        response.fabricanteVeiculo,
-        response.anoVeiculo,
-        response.corVeiculo,
-        response.estado,
-        response.cidade,
-        response.informacoesGerais,
-        response.arquivos
-      );
+    $.ajax({ url: url, method: "GET" })
+      .done(function (response) {
+        contentSlider = htmlContentSlider(response.arquivos);
+        modalContent = htmlModalVeiculo(contentSlider, response, "");
 
-      contentSlider = htmlContentSlider(veiculoObj.arquivos);
-      modalContent = htmlModalVeiculo(contentSlider, veiculoObj, "");
-
-      modal.prepend(modalContent);
-      modal.removeClass("remove");
-      modal.addClass("open");
-    })
-    .fail(function (error) {
-      console.log(error);
-    });
-});
+        modal.prepend(modalContent);
+        modal.removeClass("remove");
+        modal.addClass("open");
+      })
+      .fail(function (error) {
+        console.log(error);
+      });
+  }
+);
 
 function closeModal() {
   $(".modal").removeClass("open");
   $(".modal").addClass("remove");
 }
 
-async function getAllVeiculos(url) {
-  return $.ajax({ url: url, method: "GET" })
+function windowResize() {
+  if (window.innerWidth >= 1000) {
+    secaoUltimosVeiculos(6);
+  } else if (window.innerWidth >= 850) {
+    secaoUltimosVeiculos(5);
+  } else if (window.innerWidth >= 650) {
+    secaoUltimosVeiculos(4);
+  } else {
+    secaoUltimosVeiculos(3);
+  }
+}
+
+function secaoUltimosVeiculos(quantidade) {
+  $.ajax({ url: `${baseUrl}getUltimosVeiculos/${quantidade}`, method: "GET" })
+    .done(function (response) {
+      htmlUltimosVeiculos(response);
+    })
+    .fail(function (error) {
+      console.log(error);
+    });
+}
+
+function htmlUltimosVeiculos(veiculos) {
+  var html = "",
+    contentUltimosLancamentos = $(".header-display-lancamentos");
+
+  for (const veiculo of veiculos) {
+    html += `<div class="item-lancamentos">
+                <img
+                  title="Clique para saber mais - ${veiculo.modeloVeiculo}"
+                  src="${baseUrlImg + veiculo.arquivos[0].nomeArquivo}"
+                  data-veiculo-id="${veiculo.id}"
+                  alt="${veiculo.fabricanteVeiculo}/${veiculo.modeloVeiculo}" />
+            </div>`;
+  }
+  contentUltimosLancamentos.html("");
+  contentUltimosLancamentos.append(html);
+}
+
+async function getVeiculos(url, pagina = 1) {
+  return $.ajax({
+    url: url,
+    method: "GET",
+    headers: { paginaAtual: pagina.toString() },
+  })
     .done(function (response) {})
     .fail(function (error) {
       console.log(error);
@@ -238,25 +364,38 @@ function verificaErroInput(inputs) {
   return true;
 }
 
-function htmlGetAllVeiculos(veiculos) {
+function htmlPaginacao(paginaAtual, TotalPaginas) {
+  var htmlLabel = "";
+
+  for (let i = 0; i < TotalPaginas; i++) {
+    htmlLabel += `<label class="${i + 1 == paginaAtual ? "active" : ""}">${
+      i + 1
+    }</label>`;
+  }
+  return htmlLabel;
+}
+
+function htmlContainerVeiculos(veiculos) {
   var html = "";
 
   for (var veiculo of veiculos) {
-    html += `<div class="container-info-veiculo">
-    <img src="${baseUrlImg + veiculo.arquivos[0].nomeArquivo}"
-     title="${veiculo.modeloVeiculo}" />
-    <div class="item-info-veiculo">
-      <div class="item-texto">
-        <p>${veiculo.modeloVeiculo}</p>
-        <p>${veiculo.estado}/${veiculo.cidade}</p>
-      </div>
-      <button class="btn-detalhes-veiculo" data-veiculo-id="${veiculo.id}">
-        Ver mais
-      </button>
-    </div>
-  </div>`;
+    html += `<div class="item-veiculo">
+                <img
+                  src="${baseUrlImg + veiculo.arquivos[0].nomeArquivo}"
+                  title="${veiculo.modeloVeiculo}"/>
+                <div class="info-veiculo">
+                  <div class="item-texto">
+                    <p>${veiculo.modeloVeiculo}</p>
+                    <p>${veiculo.estado}/${veiculo.cidade}</p>
+                  </div>
+                  <button class="btn-detalhes-veiculo" data-veiculo-id="${
+                    veiculo.id
+                  }">
+                    Ver mais
+                  </button>
+                </div>
+             </div>`;
   }
-
   return html;
 }
 
@@ -271,12 +410,12 @@ function htmlContentSlider(imagens) {
   }
 
   htmlSlider = `<div class="slider-outer">
-                        <img id="prevBtn" src="previous.png" alt="anterior" />
-                        <div class="slider-inner">
-                          ${htmlImg}
-                        </div>
-                        <img id="nextBtn" src="next.png" alt="proximo" />
-                      </div>`;
+                  <img id="prevBtn" src="img/previous.png" alt="anterior" />
+                  <div class="slider-inner">
+                    ${htmlImg}
+                  </div>
+                  <img id="nextBtn" src="img/next.png" alt="proximo" />
+                </div>`;
   return htmlSlider;
 }
 
@@ -284,7 +423,6 @@ function htmlModalVeiculo(contentImage, veiculo, button) {
   const html = `<div class="modal-content">
                   <div class="upload-imagens">
                     <span class="close-button" onclick="closeModal()"> </span>
-
                     ${contentImage}
                   </div>
 

@@ -1,15 +1,13 @@
 using Microsoft.Extensions.Configuration;
-using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
-using System.Threading.Tasks;
 using WebVeiculos.Models.Entities;
+using WebVeiculos.Models.Entities.Paginacao;
 using WebVeiculos.Models.Repositories;
 using WebVeiculos.Models.Repositories.Implementacao;
 using Xunit;
 
-namespace WebVeiculos.TestsRepositorioVeiculo
+namespace WebVeiculos.TestsWebProjetoVeiculo
 {
     public class TestsRepositorioVeiculo
     {
@@ -28,26 +26,26 @@ namespace WebVeiculos.TestsRepositorioVeiculo
             _repository = new VeiculoRepository(_conexaoDbDapper);
 
             _veiculos = new List<Veiculo>();
-            var v1 = new Veiculo(0, "Roberto de Souza", "Jaguar Xe 2.0", "Jaguar", "2019", "Verde Limao", "S�o Paulo", "S�o Paulo", "........");
-            var v2 = new Veiculo(0, "Gilberto de Souza", "Polo", "Wolkswagem", "2004", "Preto", "Vitoria", "Bahia", "asaasasasa");
-            var v3 = new Veiculo(0, "Allan Lima", "Palio", "Fiat", "2007", "Prata", "S�o Paulo", "S�o Paulo", "dasdsac vsadasdsadsa");
+            var v1 = new Veiculo(0, "Roberto de Souza", "Jaguar Xe 2.0", "Jaguar", "2019", "Verde Limao", "São Paulo", "São Paulo", "........");
+            var v2 = new Veiculo(0, "Gilberto Castro", "Polo", "Wolkswagem", "2004", "Preto", "Vitoria", "Bahia", "........");
+            var v3 = new Veiculo(0, "Allan Lima", "Palio", "Fiat", "2007", "Prata", "São Paulo", "São Paulo", "........");
             var v4 = new Veiculo(0, "Bernardo Silva", "Vectra GT", "Chevrolet", "2010", "Preto", "Piaui", "Parana", "........");
 
             v1.Arquivos = new List<Arquivo>();
-            v1.Arquivos.Add(new Arquivo(0, "Jag1", 0));
-            v1.Arquivos.Add(new Arquivo(0, "Jag2", 0));
-            v1.Arquivos.Add(new Arquivo(0, "Jag3", 0));
+            v1.Arquivos.Add(new Arquivo(0, "Jag1", "Jag-arquivo-1", 1));
+            v1.Arquivos.Add(new Arquivo(0, "Jag2", "Jag-arquivo-2", 1));
+            v1.Arquivos.Add(new Arquivo(0, "Jag3", "Jag-arquivo-3", 1));
 
             v2.Arquivos = new List<Arquivo>();
-            v2.Arquivos.Add(new Arquivo(0, "Wolk1", 0));
-            v2.Arquivos.Add(new Arquivo(0, "Wolk2", 0));
+            v2.Arquivos.Add(new Arquivo(0, "Wolk1", "Wolk-arquivo-1", 2));
+            v2.Arquivos.Add(new Arquivo(0, "Wolk2", "Wolk-arquivo-2", 2));
 
             v3.Arquivos = new List<Arquivo>();
-            v3.Arquivos.Add(new Arquivo(0, "Fia1", 0));
-            v3.Arquivos.Add(new Arquivo(0, "Fia2", 0));
+            v3.Arquivos.Add(new Arquivo(0, "Fiat1", "Fiat-arquivo-1", 3));
+            v3.Arquivos.Add(new Arquivo(0, "Fiat2", "Fiat-arquivo-2", 3));
 
             v4.Arquivos = new List<Arquivo>();
-            v4.Arquivos.Add(new Arquivo(0, "Che1", 0));
+            v4.Arquivos.Add(new Arquivo(0, "Che1", "Che-arquivo-1", 4));
 
             _veiculos.AddRange(new List<Veiculo>() { v1, v2, v3, v4 });
         }
@@ -55,7 +53,7 @@ namespace WebVeiculos.TestsRepositorioVeiculo
         [Fact]
         public void SucessoAoCadastrarVeiculos()
         {
-            List<bool> retorno = new List<bool>();
+            var retorno = new List<bool>();
 
             foreach (var item in _veiculos)
             {
@@ -86,37 +84,48 @@ namespace WebVeiculos.TestsRepositorioVeiculo
         }
 
         [Fact]
-        public void SucessoAoBuscarTodosOsCarros()
+        public void SucessoAoBuscarTodosOsVeiculos()
         {
-            var veiculo = _repository.GetAllVeiculos().Result;
+            var paginacao = new PaginacaoList();
 
-            Assert.NotNull(veiculo);
+            paginacao.PaginaAtual = 1;
+
+            var paginacaoList = _repository.GetAllVeiculos(paginacao).Result;
+
+            Assert.NotEmpty(paginacaoList.Veiculos);
         }
 
         [Theory]
         [InlineData("Polo")]
-        [InlineData("Jaguar")]
-        public void SucessoAoBuscarCarrosPeloModelo(string modelo)
+        [InlineData("fiat")]
+        public void SucessoAoBuscarVeiculosPeloModelo(string modelo)
         {
-            var veiculo = _repository.GetVeiculoByModelo(modelo).Result;
+            var paginacao = new PaginacaoList();
 
-            Assert.True(veiculo.Count > 0);
+            paginacao.PaginaAtual = 1;
+
+            paginacao = _repository.GetVeiculoByModelo(paginacao, modelo).Result;
+
+            Assert.True(paginacao.Veiculos.Count > 0);
         }
 
         [Theory]
-        [InlineData("Polos")]
+        [InlineData("Polo xpto")]
         [InlineData("Jaguar xpto")]
-        public void ErroAoBuscarCarrosPeloModelo(string modelo)
+        public void ErroAoBuscarVeiculosPeloModelo(string modelo)
         {
-            var veiculo = _repository.GetVeiculoByModelo(modelo).Result;
+            var paginacao = new PaginacaoList();
 
-            Assert.False(veiculo.Count > 0);
+            paginacao.PaginaAtual = 1;
+            paginacao = _repository.GetVeiculoByModelo(paginacao, modelo).Result;
+
+            Assert.False(paginacao.Veiculos.Count > 0);
         }
 
         [Theory]
-        [InlineData(69)]
-        [InlineData(71)]
-        public void SucessoAoBuscarCarrosPeloId(int id)
+        [InlineData(1)]
+        [InlineData(2)]
+        public void SucessoAoBuscarVeiculosPeloId(int id)
         {
             var veiculo = _repository.GetVeiculoById(id).Result;
 
@@ -124,13 +133,23 @@ namespace WebVeiculos.TestsRepositorioVeiculo
         }
 
         [Theory]
-        [InlineData(7)]
-        [InlineData(35)]
-        public void ErroAoBuscarCarrosPeloId(int id)
+        [InlineData(55)]
+        [InlineData(56)]
+        public void ErroAoBuscarVeiculosPeloId(int id)
         {
             var veiculo = _repository.GetVeiculoById(id).Result;
 
             Assert.Null(veiculo);
+        }
+
+        [Theory]
+        [InlineData(5)]
+        [InlineData(3)]
+        public void SucessoAoBuscarUltimosVeiculosCadastrados(int qtd)
+        {
+            var veiculo = _repository.GetUltimosVeiculosCadastrados(qtd).Result;
+
+            Assert.NotEmpty(veiculo);
         }
     }
 }

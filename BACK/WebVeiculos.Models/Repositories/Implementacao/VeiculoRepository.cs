@@ -185,7 +185,8 @@ namespace WebVeiculos.Models.Repositories.Implementacao
 
             using (var conexao = _conexaoDb.ConnectionDapper)
             {
-                paginacao.TotalItems = await conexao.QueryFirstAsync<int>("SELECT COUNT(id) FROM tbl_veiculo");
+                paginacao.TotalItems = await conexao.QueryFirstAsync<int>("SELECT COUNT(id) FROM tbl_veiculo WHERE modelo_veiculo LIKE CONCAT('%',@modelo,'%');",
+                                                                            param: new { modelo = modelo });
 
                 paginacao.TotalPaginas = (int)Math.Ceiling((decimal)paginacao.TotalItems / paginacao.ItemsPorPagina);
 
