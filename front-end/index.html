@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles/style.css" />
+    <title>Web Veiculos</title>
+  </head>
+  <body>
+    <header>
+      <div class="header-display-lancamentos"></div>
+
+      <div class="header-container">
+        <div id="img-curva"></div>
+        <div class="container-busca">
+          <input id="input-pesquisa" type="text" />
+          <button id="button-cancelar">
+            <img title="Cancelar" src="img/cancelar.png" alt="" />
+          </button>
+          <button id="button-buscar">
+            <img title="Pesquisar" src="img/pesquisa.png" alt="" />
+          </button>
+        </div>
+
+        <button id="btn-open-modal-adicionar">
+          <img src="img/adicionar.png" title="Adicionar meu veiculo" />
+        </button>
+      </div>
+    </header>
+
+    <div class="container-veiculos"></div>
+
+    <div class="container-paginacao"></div>
+
+    <div class="modal" id="modal-remove"></div>
+
+    <script src="scripts/jquery-3.6.0.min.js"></script>
+    <script src="scripts/modal.js"></script>
+    <script src="scripts/debounce.js"></script>
+    <script src="scripts/app.js"></script>
+  </body>
+</html>
