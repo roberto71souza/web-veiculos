@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WebVeiculos.Models.Entities
 {
@@ -22,9 +20,10 @@ namespace WebVeiculos.Models.Entities
 
         private void ValidarEntidadeArquivo(string legenda, string nomeArquivo, int idVeiculo)
         {
-            ValidarEntidade(string.IsNullOrWhiteSpace(legenda), "Legenda, é obrigatorio");
-            ValidarEntidade(string.IsNullOrWhiteSpace(nomeArquivo), "Nome do arquivo, é obrigatorio");
-            ValidarEntidade(idVeiculo <= 0, "Id do Veiculo, é obrigatorio");
+            ValidarEntidade(string.IsNullOrWhiteSpace(legenda), "Legenda é obrigatorio", "legenda");
+            ValidarEntidade(string.IsNullOrWhiteSpace(nomeArquivo), "Nome do arquivo é obrigatorio", "nomeArquivo");
+            ValidarEntidade(!ExtensaoValida(nomeArquivo), "Uma ou mais imagens possuem formato invalido, formatos validos ex: png, jpeg e jpg", "nomeArquivo");
+            ValidarEntidade(idVeiculo <= 0, "Id do Veiculo é obrigatorio", "idVeiculo");
         }
 
         public void UpdateEntidadeArquivo(Arquivo arquivo)
@@ -34,5 +33,18 @@ namespace WebVeiculos.Models.Entities
             Legenda = arquivo.Legenda;
             IdVeiculo = arquivo.IdVeiculo;
         }
+
+        private bool ExtensaoValida(string nomeArquivo)
+        {
+            var extensao = Path.GetExtension(nomeArquivo);
+            var extensoesValidas = new string[] { ".jpg", ".jpeg", ".png" };
+
+            if (!extensoesValidas.Contains(extensao.ToLower()))
+            {
+                return false;
+            }
+            return true;
+        }
+
     }
 }

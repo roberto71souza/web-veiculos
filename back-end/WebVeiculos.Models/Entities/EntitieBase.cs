@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WebVeiculos.Models.Entities
 {
     public abstract class EntitieBase
     {
         public int Id { get; private set; }
-        private ICollection<string> _listaDeErros { get; set; }
-        public IReadOnlyCollection<string> ListaDeErros { get { return _listaDeErros.ToList(); } }
+        private ICollection<dynamic> _listaDeErros { get; set; }
+        public IReadOnlyCollection<dynamic> ListaDeErros { get { return _listaDeErros.ToList(); } }
         public bool EhValido
         {
             get
@@ -26,14 +23,14 @@ namespace WebVeiculos.Models.Entities
         public EntitieBase(int id)
         {
             Id = id;
-            _listaDeErros = new List<string>();
+            _listaDeErros = new List<dynamic>();
         }
 
-        protected void ValidarEntidade(bool hasError, string mensagemErro)
+        protected void ValidarEntidade(bool hasError, string mensagemErro, string propriedade)
         {
             if (hasError)
             {
-                _listaDeErros.Add(mensagemErro);
+                _listaDeErros.Add(new { propriedade = propriedade, erro = mensagemErro });
             }
         }
 
