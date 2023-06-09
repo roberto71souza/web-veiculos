@@ -1,0 +1,43 @@
+version: '3.9'
+
+networks:
+  network_mysql:
+  network_web_veiculos:
+
+services:
+  mysql:
+    image: "mysql"
+    container_name: "mysql_db_webveiculos"
+    ports:
+      - "3306:3306"
+    networks:
+      - network_mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=usuarioX96
+      - MYSQL_PASSWORD=usuarioX96
+
+  backend-webveiculos:
+    build:
+      context: "./back-end"
+      dockerfile: Dockerfile
+    container_name: "backend-webveiculos"
+    networks:
+      - network_mysql
+      - network_web_veiculos
+    ports:
+      - "5000:80"
+    environment:
+      - DBHOST=mysql
+    depends_on:
+      - mysql
+
+  frontend-webveiculos:
+    build:
+      context: "./front-end"
+      dockerfile: Dockerfile
+    container_name: "frontend-webveiculos"
+    networks:
+      - network_web_veiculos
+    ports:
+      - "3000:80"
+
