@@ -61,12 +61,6 @@ bld/
 *.svclog
 *.scc
 
-# SQL Server files
-*.mdf
-*.ldf
-*.ndf
-*.sql
-
 # JetBrains Rider
 .idea/
 *.sln.iml
