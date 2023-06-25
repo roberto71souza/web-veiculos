@@ -1,12 +1,13 @@
-# Web Veículos
+## Web Veículos
 Sistema web que consome dados de uma API através de requisições Ajax.
 Neste projeto é aplicado alguns conceitos DDD e arquitetura limpa como arquitetura em camadas, domínio, repositório, serviços, injeção de dependência e inversão de dependência.
 
-# Docker
+## Docker
 Docker é uma ferramenta que facilita o desenvolvimento de sistemas para a equipe de desenvolvedores, com o Docker é possível configurar e criar o ambiente de desenvolvimento que pode ser compartilhado junto do projeto a equipe dos desenvolvedores sem a necessidade que a maquina local tenha instalado as ferramentas ou tecnologias já configuradas pelo Docker, isto porque a ferramenta Docker administra os sistemas em contêineres, que é isolado do sistema operacional da máquina local.
+\
 Uma ferramenta do Docker que é muito interessante, que é usada também neste projeto, é o Docker Compose, ele é bastante usado em projetos mais complexos que possui múltiplos sistemas, como por exemplo aplicações de api's, front end e banco de dados, com o Docker Compose é possível em um único arquivo configurar e criar o ambiente destas aplicações e rodar estas aplicações somente com um único comando.
 
-# Principais Tecnologias usadas:
+## Principais Tecnologias usadas:
 **Back-end:**
 - .Net 5
 - Dapper
@@ -25,7 +26,7 @@ Uma ferramenta do Docker que é muito interessante, que é usada também neste p
 **Administração de ambientes:**
 - Docker
 
-# Executar o sistema usando o Docker
+## Executar o sistema usando o Docker
 
 - Clonar este projeto, ou fazer o download zip.
 
